@@ -4,6 +4,7 @@ import emoji
 import polars as pl
 
 DATA_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/plain_text"
+RESULT_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/"
 
 file_names = os.listdir(DATA_FOLDER)
 file_names.sort()
@@ -60,4 +61,4 @@ for file_name in file_names:
     result_df = pl.concat([result_df, pl.DataFrame(chat_res)])
     
 # Save the DataFrame to a Parquet file
-result_df.write_csv("wns_corpus_v1.0.0.csv")
+result_df.write_csv(os.path.join(RESULT_FOLDER, "wns_corpus.csv"))
