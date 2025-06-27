@@ -33,7 +33,7 @@ for file_name in file_names:
         
         if user_pos:
             msg_date = line[:user_pos.span()[0]].strip()
-            msg_user = line[user_pos.span()[0]:user_pos.span()[1]].strip()[1:-1]
+            msg_user = line[user_pos.span()[0]:user_pos.span()[1]].strip()
             msg_text = line[user_pos.span()[1]+1:].strip()
         elif hour_pos:
             msg_date = line[:hour_pos.span()[1]].strip()
