@@ -54,7 +54,7 @@ for file_name in file_names :
     msg_idx = []
     for row in df.iter_rows(named=True):
         msg_text = row["msg_text"].replace("\n", " ")
-        msgs.append(f"[{row["msg_date"]}] {row["msg_user"]}: {row["msg_text"]}")
+        msgs.append(f"[{row['msg_date']}] {row['msg_user']}: {row['msg_text']}")
         msg_idx.append(row["msg_id"])
     # Join the messages into a single string
     full_text = "\n".join(msgs)
@@ -62,13 +62,10 @@ for file_name in file_names :
     # Change the user names to the pseudo names
     for row in pseudo_df.iter_rows(named=True):
         user_id = row["user_id"]
-        std_user_id = f"_{"_".join(user_id.upper().split("."))}_"
+        std_user_id = f"_{'_'.join(user_id.upper().split('.'))}_"
         full_text = full_text.replace(std_user_id, row["pseudo"])
         
     # --- Build context files
-
-    # Windows length
-    win_length = CONTEXT_LENGTH // 3
         
     # The tokenizer
     tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_NAME)
@@ -94,15 +91,20 @@ for file_name in file_names :
             
     # If not : split the text into contexts
     else:
+        # Windows length
+        win_length = CONTEXT_LENGTH // 3
+        
         # Compute the number contexts needed
         number_of_contexts = (number_of_tokens // win_length) + 1
 
         # Make the cumulative text lengths vector
         split_text = full_text.split("\n")
+        msg_lengths = []
         cum_lengths = []
         cum_length = 0
         for msg in split_text:
             msg_length = len(tokenizer(msg)["input_ids"])
+            msg_lengths.append(msg_length)
             cum_length += msg_length
             cum_lengths.append(cum_length)
 
