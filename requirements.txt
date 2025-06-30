@@ -1,2 +1,4 @@
 emoji
 polars
+torch
+transformers

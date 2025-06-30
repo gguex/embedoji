@@ -3,13 +3,24 @@ import re
 import emoji
 import polars as pl
 
+# -----------------------------
+# --- PARAMETERS
+# -----------------------------
+
 DATA_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/plain_text"
 RESULT_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_csv"
+
+# -----------------------------
+# --- CODE 
+# -----------------------------
 
 file_names = os.listdir(DATA_FOLDER)
 file_names.sort()
 
+# the ID for messages
 msg_id = 1
+
+# Loop on files
 for file_name in file_names:
     
     chat_name = file_name.split(".")[0]
