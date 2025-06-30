@@ -35,7 +35,7 @@ file_names = os.listdir(INPUT_FILE_FOLDER)
 file_names.sort()
 
 # Loop on them 
-for file_name in file_names :
+for file_name in file_names[10:11]:
         
     short_name = file_name.split(".")[0]
     df = pl.read_csv(os.path.join(INPUT_FILE_FOLDER, file_name))
@@ -91,13 +91,8 @@ for file_name in file_names :
             
     # If not : split the text into contexts
     else:
-        # Windows length
-        win_length = CONTEXT_LENGTH // 3
-        
-        # Compute the number contexts needed
-        number_of_contexts = (number_of_tokens // win_length) + 1
 
-        # Make the cumulative text lengths vector
+        # Make the text lengths and cumulative lengths vectors
         split_text = full_text.split("\n")
         msg_lengths = []
         cum_lengths = []
@@ -107,12 +102,19 @@ for file_name in file_names :
             msg_lengths.append(msg_length)
             cum_length += msg_length
             cum_lengths.append(cum_length)
+        
+        win_length = CONTEXT_LENGTH // 3
+        std_length = win_length - np.max(msg_lengths)
+        number_of_contexts = int(number_of_tokens / std_length) + 1
+        token_size = number_of_tokens / number_of_contexts
 
-        # Compute the context groups from quantiles
-        context_groups = number_of_contexts - np.zeros(len(cum_lengths))
-        for i in range(1, number_of_contexts + 1):
-            quantile = np.quantile(cum_lengths, i/number_of_contexts)
-            context_groups -= 1* (cum_lengths <= quantile)
+        # Compute the context groups with nearest cut
+        context_groups = np.zeros(len(cum_lengths))
+        for i in range(1, number_of_contexts):
+            threshold = i * token_size
+            diffs = np.abs(np.array(cum_lengths) - threshold)
+            closest_id = np.where(diffs == np.min(diffs))[0][0].item()
+            context_groups[closest_id:] += 1
             
         # Make the contexts
         contexts = []
