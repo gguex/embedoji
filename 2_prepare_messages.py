@@ -135,4 +135,13 @@ for file_name in file_names :
                 with open(os.path.join(OUTPUT_FOLDER, f"{short_name}_{c_str}.txt"), 
                         "w", encoding="utf-8") as f:
                     f.write(full_context)
-                    
+
+
+# Read files
+with open(os.path.join(OUTPUT_FOLDER, "wns_chat_22_6-7-8.txt"), "r", encoding="utf-8") as f:
+    lines = f.readlines()
+    
+    
+text = "\n".join(lines)
+
+len(tokenizer(text)["input_ids"])
