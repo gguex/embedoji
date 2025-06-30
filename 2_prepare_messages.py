@@ -16,8 +16,10 @@ SPECIAL_TAG_PATH = "data/special_tags.csv"
 
 TOKENIZER_NAME = "Qwen/Qwen3-Embedding-8B"
 
-OUTPUT_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_llm_ready/"
-OUTPUT_META_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_llm_ready_metadata/"
+OUTPUT_FOLDER = \
+    "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_llm_ready/"
+OUTPUT_META_FOLDER = \
+    "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_llm_ready_metadata/"
 
 # -----------------------------
 # --- CODE
@@ -34,8 +36,14 @@ special_tags = special_tags_df.select(pl.col("tag")).to_series().to_list()
 file_names = os.listdir(INPUT_FILE_FOLDER)
 file_names.sort()
 
+# Window length and stride
+win_length = CONTEXT_LENGTH // 3
+
+# Load the tokenizer
+tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_NAME)
+
 # Loop on them 
-for file_name in file_names[10:11]:
+for file_name in file_names:
         
     short_name = file_name.split(".")[0]
     df = pl.read_csv(os.path.join(INPUT_FILE_FOLDER, file_name))
@@ -54,7 +62,7 @@ for file_name in file_names[10:11]:
     msg_idx = []
     for row in df.iter_rows(named=True):
         msg_text = row["msg_text"].replace("\n", " ")
-        msgs.append(f"[{row['msg_date']}] {row['msg_user']}: {row['msg_text']}")
+        msgs.append(f"[{row['msg_date']}] {row['msg_user']}: {msg_text}")
         msg_idx.append(row["msg_id"])
     # Join the messages into a single string
     full_text = "\n".join(msgs)
@@ -66,14 +74,11 @@ for file_name in file_names[10:11]:
         full_text = full_text.replace(std_user_id, row["pseudo"])
         
     # --- Build context files
-        
-    # The tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_NAME)
 
     # Get the number of tokens
     number_of_tokens = len(tokenizer(full_text)["input_ids"])
 
-    # If size ok : write the whole file
+    # If size is ok : write the conversation in a single file
     if number_of_tokens < CONTEXT_LENGTH:
         
         # Write the metadata
@@ -89,7 +94,7 @@ for file_name in file_names[10:11]:
                 "w", encoding="utf-8") as f:
             f.write(full_text)
             
-    # If not : split the text into contexts
+    # If size is NOT ok : split the conversation into multiple contexts
     else:
 
         # Make the text lengths and cumulative lengths vectors
@@ -98,19 +103,18 @@ for file_name in file_names[10:11]:
         cum_lengths = []
         cum_length = 0
         for msg in split_text:
-            msg_length = len(tokenizer(msg)["input_ids"])
+            msg_length = len(tokenizer(msg + "\n")["input_ids"])
             msg_lengths.append(msg_length)
             cum_length += msg_length
             cum_lengths.append(cum_length)
         
-        win_length = CONTEXT_LENGTH // 3
         std_length = win_length - np.max(msg_lengths)
-        number_of_contexts = int(number_of_tokens / std_length) + 1
-        token_size = number_of_tokens / number_of_contexts
+        n_contexts = int(cum_lengths[-1] / std_length) + 1
+        token_size = cum_lengths[-1] / n_contexts
 
         # Compute the context groups with nearest cut
         context_groups = np.zeros(len(cum_lengths))
-        for i in range(1, number_of_contexts):
+        for i in range(1, n_contexts):
             threshold = i * token_size
             diffs = np.abs(np.array(cum_lengths) - threshold)
             closest_id = np.where(diffs == np.min(diffs))[0][0].item()
@@ -118,7 +122,7 @@ for file_name in file_names[10:11]:
             
         # Make the contexts
         contexts = []
-        for i in range(number_of_contexts):
+        for i in range(n_contexts):
             context = "\n".join(np.array(split_text)[context_groups == i])
             contexts.append(context)
 
@@ -136,16 +140,8 @@ for file_name in file_names[10:11]:
                 full_context = contexts[i-1] + "\n" + contexts[i] + "\n" \
                     + contexts[i+1]
                 c_str = f"{i-1}-{i}-{i+1}"
-                with open(os.path.join(OUTPUT_FOLDER, f"{short_name}_{c_str}.txt"), 
+                with open(os.path.join(OUTPUT_FOLDER, 
+                                       f"{short_name}_{c_str}.txt"), 
                         "w", encoding="utf-8") as f:
                     f.write(full_context)
-
-
-# Read files
-with open(os.path.join(OUTPUT_FOLDER, "wns_chat_22_6-7-8.txt"), "r", encoding="utf-8") as f:
-    lines = f.readlines()
-    
-    
-text = "\n".join(lines)
-
-len(tokenizer(text)["input_ids"])
+                    
