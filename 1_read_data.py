@@ -7,14 +7,14 @@ import polars as pl
 # --- PARAMETERS
 # -----------------------------
 
-DATA_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/plain_text"
-RESULT_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_csv"
+INPUT_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/plain_text"
+OUTPUT_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_csv/"
 
 # -----------------------------
 # --- CODE 
 # -----------------------------
 
-file_names = os.listdir(DATA_FOLDER)
+file_names = os.listdir(INPUT_FOLDER)
 file_names.sort()
 
 # the ID for messages
@@ -25,7 +25,7 @@ for file_name in file_names:
     
     chat_name = file_name.split(".")[0]
 
-    with open(os.path.join(DATA_FOLDER, file_name), "r", encoding="utf-8") as f:
+    with open(os.path.join(INPUT_FOLDER, file_name), "r", encoding="utf-8") as f:
         lines = f.readlines()
         
     msg_date = msg_user = msg_text = None
@@ -69,4 +69,4 @@ for file_name in file_names:
     result_df = pl.DataFrame(chat_res)
     
     # Save the DataFrame to a Parquet file
-    result_df.write_csv(os.path.join(RESULT_FOLDER, f"{chat_name}.csv"))
+    result_df.write_csv(os.path.join(OUTPUT_FOLDER, f"{chat_name}.csv"))

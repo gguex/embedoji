@@ -9,16 +9,17 @@ import numpy as np
 # -----------------------------
 
 CONTEXT_LENGTH = 32000
-INPUT_FILE_FOLDER = "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_csv/"
+INPUT_FILES_FOLDER = \
+    "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_csv/"
 
-USR_PSEUDO_PATH = "data/pseudo.csv"
-SPECIAL_TAG_PATH = "data/special_tags.csv"
+PSEUDO_PATH = "data/pseudo.csv"
+SPECIAL_TAGS_PATH = "data/special_tags.csv"
 
-TOKENIZER_NAME = "Qwen/Qwen3-Embedding-8B"
+MODEL_NAME = "Qwen/Qwen3-Embedding-8B"
 
 OUTPUT_FOLDER = \
     "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_llm_ready/"
-OUTPUT_META_FOLDER = \
+META_OUTPUT_FOLDER = \
     "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_llm_ready_metadata/"
 
 # -----------------------------
@@ -26,27 +27,27 @@ OUTPUT_META_FOLDER = \
 # -----------------------------
 
 # External data 
-pseudo_df = pl.read_csv(USR_PSEUDO_PATH)
-special_tags_df = pl.read_csv(SPECIAL_TAG_PATH)
+pseudo_df = pl.read_csv(PSEUDO_PATH)
+special_tags_df = pl.read_csv(SPECIAL_TAGS_PATH)
 
 # Get the special tags
 special_tags = special_tags_df.select(pl.col("tag")).to_series().to_list()
 
 # Get file names
-file_names = os.listdir(INPUT_FILE_FOLDER)
+file_names = os.listdir(INPUT_FILES_FOLDER)
 file_names.sort()
 
 # Window length and stride
 win_length = CONTEXT_LENGTH // 3
 
 # Load the tokenizer
-tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_NAME)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 # Loop on them 
 for file_name in file_names:
         
     short_name = file_name.split(".")[0]
-    df = pl.read_csv(os.path.join(INPUT_FILE_FOLDER, file_name))
+    df = pl.read_csv(os.path.join(INPUT_FILES_FOLDER, file_name))
 
     # --- Preprocessing messages
 
@@ -86,7 +87,7 @@ for file_name in file_names:
             "msg_id": msg_idx,
             "context_groups": 0,
         })
-        metadata_df.write_csv(os.path.join(OUTPUT_META_FOLDER, 
+        metadata_df.write_csv(os.path.join(META_OUTPUT_FOLDER, 
                                            f"meta_{file_name}"))
         
         # Write the full text
@@ -131,7 +132,7 @@ for file_name in file_names:
             "msg_id": msg_idx,
             "context_groups": context_groups.astype(np.int32).tolist(),
         })
-        metadata_df.write_csv(os.path.join(OUTPUT_META_FOLDER, 
+        metadata_df.write_csv(os.path.join(META_OUTPUT_FOLDER, 
                                            f"meta_{file_name}"))
 
         # Save the contexts
