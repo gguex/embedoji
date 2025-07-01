@@ -49,12 +49,8 @@ for batch_id in range(N_BATCHES):
     # Print the batch ID
     print(f"Processing batch {batch_id + 1} of {N_BATCHES}")
     
-    # Memory before
-    print(f"Memory before: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
     # Empty the cache 
     torch.cuda.empty_cache()
-    # Memory after
-    print(f"Memory after: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
 
     # Get the text files for the current batch
     text_files = todo_text_files[(batch_id * BATCH_SIZE):
@@ -102,7 +98,7 @@ for batch_id in range(N_BATCHES):
         head_n_markers = 0
         msg_id = 1
         for marker in markers:
-            if head_n_markers < 3:
+            if head_n_markers < 2:
                 if marker["begin_msg"]:
                     head_n_markers += 1
                 token_msg_grps.append(0)
@@ -134,5 +130,6 @@ for batch_id in range(N_BATCHES):
         pl.DataFrame(msg_embeddings).write_csv(result_file, include_header=False)
     
     # Print completion of the batch
-    print(f"Batch {batch_id + 1} completed ({', '.join(text_files)})")
+    print(f"Batch {batch_id + 1} files: ({', '.join(text_files)}), last index:"
+          f"({(batch_id * BATCH_SIZE + BATCH_SIZE)})")
         

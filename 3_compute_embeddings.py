@@ -38,6 +38,7 @@ todo_text_files = all_text_files[STARTING_ID:(STARTING_ID + N_BATCHES * BATCH_SI
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 # Load the tokenizer and model
 model = AutoModel.from_pretrained(MODEL_NAME, torch_dtype=torch.float16).to(device)
+model.eval()
 
 # Loop on batches
 for batch_id in range(N_BATCHES):
@@ -65,12 +66,14 @@ for batch_id in range(N_BATCHES):
         padding=True,
         return_tensors="pt"
     )
-
+    
     # Embed the tokens
     batch_dict.to(model.device)
     with torch.no_grad():
         outputs = model(**batch_dict)
-    embeddings = outputs.last_hidden_state.to(device="cpu").detach()
+    batch_dict.to(device="cpu") 
+    embeddings = outputs.last_hidden_state.cpu()
+    del outputs
 
     # Loop on files
     for text_id, text_file in enumerate(text_files):
@@ -91,7 +94,7 @@ for batch_id in range(N_BATCHES):
         head_n_markers = 0
         msg_id = 1
         for marker in markers:
-            if head_n_markers < 3:
+            if head_n_markers < 2:
                 if marker["begin_msg"]:
                     head_n_markers += 1
                 token_msg_grps.append(0)
@@ -123,4 +126,5 @@ for batch_id in range(N_BATCHES):
         pl.DataFrame(msg_embeddings).write_csv(result_file, include_header=False)
     
     # Print completion of the batch
-    print(f"Batch {batch_id + 1} completed ({", ".join(text_files)})")
+    print(f"Batch {batch_id + 1} files: ({', '.join(text_files)}), last index:"
+          f"({(batch_id * BATCH_SIZE + BATCH_SIZE)})")

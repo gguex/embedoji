@@ -63,7 +63,10 @@ for file_name in file_names:
     msg_idx = []
     for row in df.iter_rows(named=True):
         msg_text = row["msg_text"].replace("\n", " ")
-        msgs.append(f"[{row['msg_date']}] {row['msg_user']}: {msg_text}")
+        msg_date = row["msg_date"]
+        if msg_date.count(":") == 2:
+            msg_date = ":".join(msg_date.split(":")[:-1])
+        msgs.append(f"[{msg_date}] {row['msg_user']}: {msg_text}")
         msg_idx.append(row["msg_id"])
     # Join the messages into a single string
     full_text = "\n".join(msgs)
