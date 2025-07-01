@@ -19,7 +19,7 @@ CACHE_DIR = "/work/FAC/Lettres/SLI/gguex/default/models"
 
 BATCH_SIZE = 4
 STARTING_ID = 0
-N_BATCHES = 3
+N_BATCHES = 455
 
 # -----------------------------
 # --- CODE 
@@ -127,7 +127,8 @@ for batch_id in range(N_BATCHES):
         # Save the embeddings
         short_name = text_file.split(".")[0]
         result_file = os.path.join(OUTPUT_FOLDER, f"{short_name}.csv")
-        pl.DataFrame(msg_embeddings).write_csv(result_file, include_header=False)
+        pl.DataFrame(msg_embeddings).write_csv(result_file, 
+                                               include_header=False)
     
     # Print completion of the batch
     print(f"Batch {batch_id + 1} files: ({', '.join(text_files)}), last index:"
