@@ -18,7 +18,7 @@ OUTPUT_FOLDER = \
 MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
 
 BATCH_SIZE = 4
-STARTING_ID = 5
+STARTING_ID = 0
 N_BATCHES = 3
 
 # -----------------------------
@@ -68,7 +68,8 @@ for batch_id in range(N_BATCHES):
 
     # Embed the tokens
     batch_dict.to(model.device)
-    outputs = model(**batch_dict)
+    with torch.no_grad():
+        outputs = model(**batch_dict)
     embeddings = outputs.last_hidden_state.to(device="cpu").detach()
 
     # Loop on files

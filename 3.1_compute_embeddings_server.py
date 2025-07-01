@@ -18,7 +18,7 @@ MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
 CACHE_DIR = "/work/FAC/Lettres/SLI/gguex/default/models"
 
 BATCH_SIZE = 4
-STARTING_ID = 5
+STARTING_ID = 0
 N_BATCHES = 3
 
 # -----------------------------
