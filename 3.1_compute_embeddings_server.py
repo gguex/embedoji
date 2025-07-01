@@ -78,7 +78,8 @@ for batch_id in range(N_BATCHES):
     with torch.no_grad():
         outputs = model(**batch_dict)
     batch_dict.to(device="cpu") 
-    embeddings = outputs.last_hidden_state.to(device="cpu").detach()
+    outputs.to(device="cpu")
+    embeddings = outputs.last_hidden_state.detach()
 
     # Loop on files
     for text_id, text_file in enumerate(text_files):
