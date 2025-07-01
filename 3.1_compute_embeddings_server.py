@@ -41,6 +41,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, cache_dir=CACHE_DIR)
 model = AutoModel.from_pretrained(MODEL_NAME, 
                                     torch_dtype=torch.float16, 
                                     cache_dir=CACHE_DIR).to(device)
+model.eval()
 
 # Loop on batches
 for batch_id in range(N_BATCHES):
@@ -78,8 +79,8 @@ for batch_id in range(N_BATCHES):
     with torch.no_grad():
         outputs = model(**batch_dict)
     batch_dict.to(device="cpu") 
-    outputs.to(device="cpu")
-    embeddings = outputs.last_hidden_state.detach()
+    embeddings = outputs.last_hidden_state.cpu()
+    del outputs
 
     # Loop on files
     for text_id, text_file in enumerate(text_files):
