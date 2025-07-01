@@ -25,11 +25,19 @@ N_BATCHES = 3
 # --- CODE 
 # -----------------------------
 
+# Device configuration
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 # List files
 all_text_files = os.listdir(INPUT_FOLDER)
 all_text_files.sort()
 
 todo_text_files = all_text_files[STARTING_ID:(STARTING_ID + N_BATCHES * BATCH_SIZE)]
+
+# Load the tokenizer
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+# Load the tokenizer and model
+model = AutoModel.from_pretrained(MODEL_NAME, torch_dtype=torch.float16).to(device)
 
 # Loop on batches
 for batch_id in range(N_BATCHES):
@@ -37,6 +45,10 @@ for batch_id in range(N_BATCHES):
     # Print the batch ID
     print(f"Processing batch {batch_id + 1} of {N_BATCHES}")
     
+    # Empty the cache 
+    torch.cuda.empty_cache()
+
+    # Get the text files for the current batch
     text_files = todo_text_files[(batch_id * BATCH_SIZE):
         (batch_id * BATCH_SIZE + BATCH_SIZE)]
 
@@ -46,10 +58,6 @@ for batch_id in range(N_BATCHES):
         file_path = os.path.join(INPUT_FOLDER, file_name)
         with open(file_path, "r", encoding="utf-8") as f:
             texts.append(f.read())
-
-    # Load the tokenizer and model
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    model = AutoModel.from_pretrained(MODEL_NAME, torch_dtype=torch.float16)
 
     # Tokenize the input texts
     batch_dict = tokenizer(
