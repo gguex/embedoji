@@ -87,10 +87,12 @@ for text_id, text_file in enumerate(text_files):
     token_msg_grps = torch.tensor(token_msg_grps, dtype=torch.int32)
 
     # Make the message embeddings
-    msg_embeddings = torch.zeros((n_msg, embeddings.shape[2]), dtype=torch.float16)
+    msg_embeddings = torch.zeros((n_msg, embeddings.shape[2]), 
+                                 dtype=torch.float16)
     for msg_id in range(1, n_msg + 1):
         # Get the embeddings for the current message
-        msg_embedding = embeddings[text_id, token_msg_grps==msg_id, :].mean(dim=0)
+        msg_embedding = embeddings[text_id, 
+                                   token_msg_grps==msg_id, :].mean(dim=0)
         # Store the embeddding
         msg_embeddings[msg_id-1, :] = msg_embedding
     
