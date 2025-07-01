@@ -48,8 +48,12 @@ for batch_id in range(N_BATCHES):
     # Print the batch ID
     print(f"Processing batch {batch_id + 1} of {N_BATCHES}")
     
+    # Memory before
+    print(f"Memory before: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
     # Empty the cache 
     torch.cuda.empty_cache()
+    # Memory after
+    print(f"Memory after: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
 
     # Get the text files for the current batch
     text_files = todo_text_files[(batch_id * BATCH_SIZE):
@@ -73,6 +77,7 @@ for batch_id in range(N_BATCHES):
     batch_dict.to(model.device)
     with torch.no_grad():
         outputs = model(**batch_dict)
+    batch_dict.to(device="cpu") 
     embeddings = outputs.last_hidden_state.to(device="cpu").detach()
 
     # Loop on files
