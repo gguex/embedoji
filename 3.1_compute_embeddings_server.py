@@ -127,5 +127,5 @@ for batch_id in range(N_BATCHES):
         pl.DataFrame(msg_embeddings).write_csv(result_file, include_header=False)
     
     # Print completion of the batch
-    print(f"Batch {batch_id + 1} completed ({", ".join(text_files)})")
+    print(f"Batch {batch_id + 1} completed ({', '.join(text_files)})")
         
