@@ -2,3 +2,6 @@ emoji
 polars
 torch
 transformers
+scikit-learn
+plotly
+nicegui
