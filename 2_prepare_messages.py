@@ -12,15 +12,14 @@ CONTEXT_LENGTH = 32000
 INPUT_FILES_FOLDER = \
     "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_csv/"
 
-PSEUDO_PATH = "data/pseudo.csv"
-SPECIAL_TAGS_PATH = "data/special_tags.csv"
+PSEUDO_PATH = "data/aux/pseudo.csv"
+SPECIAL_TAGS_PATH = "data/aux/special_tags.csv"
 
 MODEL_NAME = "Qwen/Qwen3-Embedding-8B"
 
 OUTPUT_FOLDER = \
     "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_llm_ready/"
-META_OUTPUT_FOLDER = \
-    "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_llm_ready_metadata/"
+META_OUTPUT_FOLDER = "data/metadata/llm_ready_metadata/"
 
 # -----------------------------
 # --- CODE
