@@ -13,13 +13,26 @@ from nicegui import ui, run
 EMBEDDINGS_FOLDER = "data/data/corpus_embeddings/"
 CORPUS_CSV_FOLDER = \
     "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_csv/"
+    
+DATE_SPAN = [pl.date(2020, 3, 16) , pl.date(2020, 6, 20) ]
 
 # -----------------------------
 # --- CODE 
 # -----------------------------
 
-# File f 
+# Get the msg id
 chats =  os.listdir(CORPUS_CSV_FOLDER)
+chats.sort()
+
+all_msg_ids = []
+all_chat_name = []
+for chat in chats:
+    df = pl.read_csv(CORPUS_CSV_FOLDER + chat, try_parse_dates=True, infer_schema_length=1000)
+    df = df.filter((pl.col("msg_date") >= DATE_SPAN[0]) & (pl.col("msg_date") <= DATE_SPAN[1]))
+    id_list = df["msg_id"].to_list()
+    chat_list = [chat.split(".csv")[0]] * len(id_list)
+    all_msg_ids.extend(id_list)
+    all_chat_name.extend(chat_list)
 
 # Read all embeddings
 embedding_files = os.listdir(EMBEDDINGS_FOLDER)

@@ -33,7 +33,7 @@ for file_name in file_names:
     for line in lines:
 
         user_pos = re.search(r"\d{2}:\d{2} _WNS_USER_(\d){3}_:", line)
-        hour_pos = re.search(r"\d{2}:\d{2}", line)
+        hour_pos = re.search(r"\d{2}-\d{2} \d{2}:\d{2}", line)
         
         if user_pos:
             msg_date = line[:(user_pos.span()[0]+6)].strip()
