@@ -2,7 +2,7 @@ import polars as pl
 import polars.selectors as cs
 import numpy as np
 import plotly.express as px
-from nicegui import ui, run
+from nicegui import ui
 
 # -----------------------------
 # --- PARAMETERS
