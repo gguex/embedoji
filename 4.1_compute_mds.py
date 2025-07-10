@@ -1,10 +1,8 @@
 import os
 import polars as pl
-import polars.selectors as cs
 from sklearn.metrics.pairwise import cosine_similarity
 from src.mv_tools import *
-import plotly.express as px
-from nicegui import ui, run
+from transformers import AutoTokenizer
 
 # -----------------------------
 # --- PARAMETERS
@@ -14,11 +12,13 @@ EMBEDDINGS_FOLDER = "data/data/corpus_embeddings/"
 CORPUS_CSV_FOLDER = \
     "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/corpus_csv/"
 EMBEDDINGS_META_FOLDER = "data/metadata/llm_ready_metadata/"
-EMBEDDINGS_SIZE = 1024
-    
+
+MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
+EMBEDDINGS_SIZE = 1024    
 DATE_SPAN = [pl.date(2020, 3, 16) , pl.date(2020, 6, 20) ]
 
 DIM_MAX = 200
+
 
 OUTPUT_FILE = \
     "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/mds_files/mds200_v1.csv"
@@ -28,6 +28,7 @@ OUTPUT_FILE = \
 # -----------------------------
 
 # ---- Construct the metadata for the embeddings
+
 
 # Get the chat names
 chat_names =  os.listdir(CORPUS_CSV_FOLDER)
@@ -44,6 +45,8 @@ for chat_name in chat_names:
     chat_df = pl.read_csv(CORPUS_CSV_FOLDER + chat_name, 
                           try_parse_dates=True, infer_schema_length=1000)
     csv_df.extend(chat_df)
+
+
     
 # Get the metadata of embeddings
 emb_meta_df = pl.scan_csv(EMBEDDINGS_META_FOLDER + "meta_wns_chat_*.csv", 
@@ -66,6 +69,15 @@ sel_csv_df = csv_df.filter((pl.col("msg_date").is_between(*DATE_SPAN)))
 # Inner join the csv with the metadata
 meta_df = sel_csv_df.join(emb_meta_df, 
                           left_on="msg_id", right_on="msg_id", how="inner")
+
+# Load the tokenizer
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+# Get the number of tokens 
+n_tokens = [len(tokenizer(text)["input_ids"]) 
+            for text in meta_df["msg_text"].to_list()]
+meta_df = meta_df.with_columns(
+    pl.Series("n_tokens", n_tokens, dtype=pl.Int64)
+)
 
 # ---- Get the embeddings
 
@@ -95,15 +107,15 @@ n_embeddings = embeddings.shape[0]
 # ---- MDS on messages
 
 # Weights
-weights = np.ones([n_embeddings])
-weights /= np.sum(weights)
+weights = meta_df["n_tokens"].to_numpy()
+weights = weights / np.sum(weights)
 
 # Compute the cosine similarity
 cosine_d = 1 - cosine_similarity(embeddings)
 
 # Compute it
-scalar_mat = scalar_product_matrix(cosine_d)
-wdt_scalarp_mat = weighted_scalar_product_matrix(scalar_mat)
+scalar_mat = scalar_product_matrix(cosine_d, weights)
+wdt_scalarp_mat = weighted_scalar_product_matrix(scalar_mat, weights)
 X_mds, eigenvalues = weighted_mds(wdt_scalarp_mat, weights=weights, 
                                   dim_max=DIM_MAX)
 
