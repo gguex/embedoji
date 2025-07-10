@@ -18,9 +18,10 @@ EMBEDDINGS_SIZE = 1024
     
 DATE_SPAN = [pl.date(2020, 3, 16) , pl.date(2020, 6, 20) ]
 
-DIM_MAX = 100
+DIM_MAX = 200
 
-OUTPUT_FOLDER = "data/data/embeddings_mds/"
+OUTPUT_FILE = \
+    "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/mds_files/mds200_v1.csv"
 
 # -----------------------------
 # --- CODE 
@@ -98,10 +99,11 @@ weights = np.ones([n_embeddings])
 weights /= np.sum(weights)
 
 # Compute the cosine similarity
-cosine_sim = cosine_similarity(embeddings)
+cosine_d = 1 - cosine_similarity(embeddings)
 
 # Compute it
-wdt_scalarp_mat = weighted_scalar_product_matrix(cosine_sim, weights)
+scalar_mat = scalar_product_matrix(cosine_d)
+wdt_scalarp_mat = weighted_scalar_product_matrix(scalar_mat)
 X_mds, eigenvalues = weighted_mds(wdt_scalarp_mat, weights=weights, 
                                   dim_max=DIM_MAX)
 
@@ -110,4 +112,4 @@ mds_df = pl.from_numpy(X_mds).rename(lambda c_n : f"MDS_{c_n.split("_")[1]}")
 results_df = meta_df.with_columns(mds_df)
 
 # Save the results
-results_df.write_csv("data/data/embeddings_mds/embeddings_mds.csv")
+results_df.write_csv(OUTPUT_FILE)
