@@ -9,7 +9,7 @@ from nicegui import ui
 # -----------------------------
 
 MDS_FILE = \
-    "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/mds_files/mds100_v1.csv"
+    "../swissubase_2579_1_0/data/wns_corpus_v1.0.0/data/mds_files/mds200_v1.csv"
 
 # -----------------------------
 # --- CODE 
