@@ -108,7 +108,7 @@ def make_isometry(mds_df, alignement):
     
     new_mds_df = mds_df.clone()
     new_mds_df = new_mds_df.drop(cs.starts_with("MDS_"))
-    new_coord_df = pl.from_numpy(new_coord).rename(lambda c_n : f"MDS_{c_n.split("_")[1]}")
+    new_coord_df = pl.from_numpy(new_coord).rename(lambda c_n : f"MDS_{c_n.split('_')[1]}")
     new_mds_df = new_mds_df.with_columns(new_coord_df)
     
     return new_mds_df, new_vars
